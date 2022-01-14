@@ -1,15 +1,43 @@
 import 'dart:core';
-import 'package:flutter/foundation.dart';
 import 'repository.dart';
 import 'models/models.dart';
+import 'dart:async';
 
-class MemoryRepository extends Repository with ChangeNotifier {
+class MemoryRepository extends Repository {
   final List<Recipe> _currentRecipes = <Recipe>[];
   final List<Ingredient> _currentIngredients = <Ingredient>[];
+
+  // _recipeStream and ingredientStream are private fields for the streams. These will be captured the first time a stream is requested, which prevents new streams from being created for each call.
+  Stream<List<Recipe>>? _recipeStream;
+  Stream<List<Ingredient>>? _ingredientStream;
+  // Creates StreamControllers for recipes and ingredients.
+  final StreamController _recipeStreamController =
+      StreamController<List<Recipe>>();
+  final StreamController _ingredientStreamController =
+      StreamController<List<Ingredient>>();
 
   @override
   List<Recipe> findAllRecipes() {
     return _currentRecipes;
+  }
+
+  // Check to see if you already have the stream. If not, call the stream method, which creates a new stream, then return i
+  @override
+  Stream<List<Recipe>> watchAllRecipes() {
+    if (_recipeStream == null) {
+      _recipeStream = _recipeStreamController.stream as Stream<List<Recipe>>;
+    }
+    return _recipeStream!;
+  }
+
+  // Check to see if you already have the stream. If not, call the stream method, which creates a new stream, then return i
+  @override
+  Stream<List<Ingredient>> watchAllIngredients() {
+    if (_ingredientStream == null) {
+      _ingredientStream =
+          _ingredientStreamController.stream as Stream<List<Ingredient>>;
+    }
+    return _ingredientStream!;
   }
 
   @override
@@ -80,7 +108,9 @@ class MemoryRepository extends Repository with ChangeNotifier {
   }
 
   @override
-  Future init() { return Future.value(null); }
+  Future init() {
+    return Future.value(null);
+  }
 
   @override
   void close() {}
