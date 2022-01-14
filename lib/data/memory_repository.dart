@@ -17,8 +17,10 @@ class MemoryRepository extends Repository {
       StreamController<List<Ingredient>>();
 
   @override
-  List<Recipe> findAllRecipes() {
-    return _currentRecipes;
+  // Change the method to return a Future.
+  Future<List<Recipe>> findAllRecipes() {
+    // Wrap the return value with a Future.value().
+    return Future.value(_currentRecipes);
   }
 
   // Check to see if you already have the stream. If not, call the stream method, which creates a new stream, then return i
@@ -109,9 +111,12 @@ class MemoryRepository extends Repository {
 
   @override
   Future init() {
-    return Future.value(null);
+    return Future.value();
   }
 
   @override
-  void close() {}
+  void close() {
+    _recipeStreamController.close();
+    _ingredientStreamController.close();
+  }
 }
