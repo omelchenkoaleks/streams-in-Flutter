@@ -43,70 +43,80 @@ class MemoryRepository extends Repository {
   }
 
   @override
-  Recipe findRecipeById(int id) {
-    return _currentRecipes.firstWhere((recipe) => recipe.id == id);
+  Future<Recipe> findRecipeById(int id) {
+    return Future.value(
+        _currentRecipes.firstWhere((recipe) => recipe.id == id));
   }
 
   @override
-  List<Ingredient> findAllIngredients() {
-    return _currentIngredients;
+  Future<List<Ingredient>> findAllIngredients() {
+    return Future.value(_currentIngredients);
   }
 
   @override
-  List<Ingredient> findRecipeIngredients(int recipeId) {
+  Future<List<Ingredient>> findRecipeIngredients(int recipeId) {
     final recipe =
         _currentRecipes.firstWhere((recipe) => recipe.id == recipeId);
     final recipeIngredients = _currentIngredients
         .where((ingredient) => ingredient.recipeId == recipe.id)
         .toList();
-    return recipeIngredients;
+    return Future.value(recipeIngredients);
   }
 
   @override
-  int insertRecipe(Recipe recipe) {
+  // Update the method’s return type to be Future.
+  Future<int> insertRecipe(Recipe recipe) {
     _currentRecipes.add(recipe);
+    // Add _currentRecipes to the recipe sink.
+    _recipeStreamController.sink.add(_currentRecipes);
     if (recipe.ingredients != null) {
       insertIngredients(recipe.ingredients!);
     }
-    notifyListeners();
-    return 0;
+    // Removed notifyListeners();.
+    // Return a Future value.
+    return Future.value(0);
   }
 
   @override
-  List<int> insertIngredients(List<Ingredient> ingredients) {
+  Future<List<int>> insertIngredients(List<Ingredient> ingredients) {
     if (ingredients.length != 0) {
       _currentIngredients.addAll(ingredients);
-      notifyListeners();
+      _ingredientStreamController.sink.add(_currentIngredients);
     }
-    return <int>[];
+    return Future.value(<int>[]);
   }
 
   @override
-  void deleteRecipe(Recipe recipe) {
+  Future<void> deleteRecipe(Recipe recipe) {
     _currentRecipes.remove(recipe);
+    _recipeStreamController.sink.add(_currentRecipes);
     if (recipe.id != null) {
       deleteRecipeIngredients(recipe.id!);
     }
-    notifyListeners();
+    return Future.value();
   }
 
   @override
-  void deleteIngredient(Ingredient ingredient) {
+  Future<void> deleteIngredient(Ingredient ingredient) {
     _currentIngredients.remove(ingredient);
+    _ingredientStreamController.sink.add(_currentIngredients);
+    return Future.value();
   }
 
   @override
-  void deleteIngredients(List<Ingredient> ingredients) {
+  Future<void> deleteIngredients(List<Ingredient> ingredients) {
     _currentIngredients
         .removeWhere((ingredient) => ingredients.contains(ingredient));
-    notifyListeners();
+    _ingredientStreamController.sink.add(_currentIngredients);
+    return Future.value();
   }
 
   @override
-  void deleteRecipeIngredients(int recipeId) {
+  Future<void> deleteRecipeIngredients(int recipeId) {
     _currentIngredients
         .removeWhere((ingredient) => ingredient.recipeId == recipeId);
-    notifyListeners();
+    _ingredientStreamController.sink.add(_currentIngredients);
+    return Future.value();
   }
 
   @override
